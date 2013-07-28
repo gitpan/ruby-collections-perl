@@ -156,11 +156,11 @@ stdout_is(
 is_deeply(
 	ra( 1, 2, 3, 4 )->each_cons(2),
 	ra( ra( 1, 2 ), ra( 2, 3 ), ra( 3, 4 ) ),
-	'Testing each_cons'
+	'Testing each_cons()'
 );
 
 is_deeply(
-	ra( 1, 2, 3 )->each_entry( sub { print $_[0] } ),
+	ra( 1, 2, 3 )->each_entry->to_a,
 	ra( 1, 2, 3 ),
 	'Testing each_entry()'
 );
@@ -168,9 +168,8 @@ is_deeply(
 is_deeply(
 	ra( 1, 2, 3, 4, 5 )->each_slice(3),
 	ra( ra( 1, 2, 3 ), ra( 4, 5 ) ),
-	'Testing each_slice'
+	'Testing each_slice()'
 );
-
 my $newra = ra;
 ra( 1, 3, 5, 7 )->each_index( sub { $newra << $_[0] } );
 is_deeply( $newra, ra( 0, 1, 2, 3 ), 'Testing each_index' );
@@ -292,19 +291,17 @@ is_deeply(
 
 is_deeply(
 	ra( 1, 2, 3, 4 )->insert( -2, 5 ),
-	ra( 1, 2, 3, 5,              4 ),
+	ra( 1, 2, 3, 5,               4 ),
 	'Testing insert()'
 );
 
 is_deeply(
 	ra( 1, 2, 3, 4 )->insert( 6, 5 ),
-	ra( 1, 2, 3, 4,              undef, undef,5 ),
+	ra( 1, 2, 3, 4, undef, undef, 5 ),
 	'Testing insert()'
 );
 
-
 is( ra( 1, 2, 3 )->inspect(), '[1, 2, 3]', 'Testing inspect()' );
-
 
 is( ra( 1, 2, 3 )->to_s(), '[1, 2, 3]', 'Testing to_s()' );
 
@@ -345,13 +342,11 @@ is_deeply(
 	'Testing minmax_by()'
 );
 
-is( ra( 99, 43, 65 )->has_none( sub { $_[0] < 50 } ), 0, 'Testing has_none()' )
-  ; 
-is( ra()->has_none, 1, 'Testing has_none()' ); 
+is( ra( 99, 43, 65 )->has_none( sub { $_[0] < 50 } ), 0, 'Testing has_none()' );
+is( ra()->has_none, 1, 'Testing has_none()' );
 
-is( ra( 99, 43, 65 )->has_one( sub { $_[0] < 50 } ), 1, 'Testing has_one()' )
-  ;                                           
-is( ra(100)->has_one, 1, 'Testing has_one()' ); 
+is( ra( 99, 43, 65 )->has_one( sub { $_[0] < 50 } ), 1, 'Testing has_one()' );
+is( ra(100)->has_one, 1, 'Testing has_one()' );
 
 is_deeply(
 	ra( 1, 2, 3, 4, 5, 6, 7 )->partition( sub { $_[0] % 2 == 0 } ),
@@ -359,8 +354,11 @@ is_deeply(
 	'Testing partition()'
 );
 
-is_deeply(ra(1, 2)->permutation->sort, ra(ra(1, 2), ra(2, 1))->sort, 'Testing permutation()');
-
+is_deeply(
+	ra( 1, 2 )->permutation->sort,
+	ra( ra( 1, 2 ), ra( 2, 1 ) )->sort,
+	'Testing permutation()'
+);
 
 is( ra( 1, 2, 3 )->pop, 3, 'Testing pop()' );
 is_deeply( ra( 1, 2, 3 )->pop(2), ra( 2, 3 ), 'Testing pop()' );
@@ -373,7 +371,11 @@ is_deeply(
 
 is_deeply( ra( 1, 2, 3 )->push( 5, 6 ), ra( 1, 2, 3, 5, 6 ), 'Testing push()' );
 
-is_deeply(ra(ra(1, 3), 3, ra(2, 3))->rassoc(3), ra(1, 3), 'Testing rassoc()');
+is_deeply(
+	ra( ra( 1, 3 ), 3, ra( 2, 3 ) )->rassoc(3),
+	ra( 1, 3 ),
+	'Testing rassoc()'
+);
 
 is_deeply( ra( 1, 2, 3 )->reject( sub { $_[0] < 3 } ),
 	ra(3), 'Testing reject()' );
@@ -394,7 +396,6 @@ is_deeply(
 	ra( ra( 1, 1 ), ra( 1, 2 ), ra( 2, 1 ), ra( 2, 2 ) ),
 	'Testing repeated_permutation()'
 );
-
 
 is_deeply( ra( 1, 2, 3 )->reverse(), ra( 3, 2, 1 ), 'Testing reverse()' );
 
@@ -471,40 +472,86 @@ my $b = $a->sliceEx( 1, 2 );
 is_deeply( $b, ra( 2, 3 ), 'Testing sliceEx()' );
 is_deeply( $a, ra( 1, 4, 5 ), 'Testing sliceEx()' );
 
-is_deeply(ra(1, 2, 3, 4, 5, 3)->slice_before(3), ra(ra(1, 2), ra(3, 4, 5),ra(3)), 'Testing slice_before()');
-is_deeply(ra(1, 2, 3, 4, 5, 3)->slice_before(sub {$_[0]%3 == 0}), ra(ra(1, 2), ra(3, 4, 5), ra(3)), 'Testing slice_before()');
+is_deeply(
+	ra( 1, 2, 3, 4, 5, 3 )->slice_before(3),
+	ra( ra( 1, 2 ), ra( 3, 4, 5 ), ra(3) ),
+	'Testing slice_before()'
+);
+is_deeply(
+	ra( 1, 2, 3, 4, 5, 3 )->slice_before( sub { $_[0] % 3 == 0 } ),
+	ra( ra( 1, 2 ), ra( 3, 4, 5 ), ra(3) ),
+	'Testing slice_before()'
+);
 
-is_deeply(ra(1, 3, 5, 2, 7, 0)->sort, ra(0, 1, 2, 3, 5, 7), 'Testing sort()');
-is_deeply(ra('djh', 'kdirhf', 'a')->sort(sub {length($_[0]) <=> length($_[1])}), ra('a', 'djh', 'kdirhf'), 'Testing sort()');
+is_deeply(
+	ra( 1, 3, 5, 2, 7, 0 )->sort,
+	ra( 0, 1, 2, 3, 5, 7 ),
+	'Testing sort()'
+);
+is_deeply(
+	ra( 'djh', 'kdirhf', 'a' )
+	  ->sort( sub { length( $_[0] ) <=> length( $_[1] ) } ),
+	ra( 'a', 'djh', 'kdirhf' ),
+	'Testing sort()'
+);
 
-my $a = ra(1, 3, 5, 2, 7, 0);
+my $a = ra( 1, 3, 5, 2, 7, 0 );
 my $b = $a->sortEx;
-is_deeply($a, ra(0, 1, 2, 3, 5, 7), 'Testing sortEx()');
-is_deeply($b, ra(0, 1, 2, 3, 5, 7), 'Testing sortEx()');
-my $a = ra('djh', 'kdirhf', 'a');
-my $b = $a->sortEx(sub {length($_[0]) <=> length($_[1])});
-is_deeply($a, ra('a', 'djh', 'kdirhf'), 'Testing sortEx()');
-is_deeply($b, ra('a', 'djh', 'kdirhf'), 'Testing sortEx()');
+is_deeply( $a, ra( 0, 1, 2, 3, 5, 7 ), 'Testing sortEx()' );
+is_deeply( $b, ra( 0, 1, 2, 3, 5, 7 ), 'Testing sortEx()' );
+my $a = ra( 'djh', 'kdirhf', 'a' );
+my $b = $a->sortEx( sub { length( $_[0] ) <=> length( $_[1] ) } );
+is_deeply( $a, ra( 'a', 'djh', 'kdirhf' ), 'Testing sortEx()' );
+is_deeply( $b, ra( 'a', 'djh', 'kdirhf' ), 'Testing sortEx()' );
 
-is_deeply(ra(2, 3, 7, 89, 6)->sort_by(sub {$_[0]-2}), ra(2, 3, 6, 7, 89), 'Testing sort_by()');
+is_deeply(
+	ra( 2, 3, 7, 89, 6 )->sort_by( sub { $_[0] - 2 } ),
+	ra( 2, 3, 6, 7,  89 ),
+	'Testing sort_by()'
+);
 
-my $a = ra(2, 3, 7, 89, 6);
-my $b = $a->sort_byEx(sub {$_[0]-2});
-is_deeply($a, ra(2, 3, 6, 7, 89), 'Testing sort_byEx()');
-is_deeply($b, ra(2, 3, 6, 7, 89), 'Testing sort_byEx()');
+my $a = ra( 2, 3, 7, 89, 6 );
+my $b = $a->sort_byEx( sub { $_[0] - 2 } );
+is_deeply( $a, ra( 2, 3, 6, 7, 89 ), 'Testing sort_byEx()' );
+is_deeply( $b, ra( 2, 3, 6, 7, 89 ), 'Testing sort_byEx()' );
 
-is_deeply(ra(3, 5, 6, 7, 8, 9)->take(2), ra(3, 5), 'Testing take()');
+is_deeply( ra( 3, 5, 6, 7, 8, 9 )->take(2), ra( 3, 5 ), 'Testing take()' );
 
-is_deeply(ra(2, 4, 3 ,6 ,7 , 8, 2)->take_while(sub {$_[0] < 5}), ra(2, 4, 3), 'Testing take_while()');
+is_deeply(
+	ra( 2, 4, 3, 6, 7, 8, 2 )->take_while( sub { $_[0] < 5 } ),
+	ra( 2, 4, 3 ),
+	'Testing take_while()'
+);
 
-is_deeply(ra(2, 4, 6, 7, 8, 9)->to_a, ra(2, 4, 6, 7, 8, 9), 'Testing to_a()');
+is_deeply(
+	ra( 2, 4, 6, 7, 8, 9 )->to_a,
+	ra( 2, 4, 6, 7, 8, 9 ),
+	'Testing to_a()'
+);
 
-is_deeply(rh(2=>4, 4=>5, 6=>7)->entries, ra(ra(2, 4),ra(4, 5) ,ra(6, 7)), 'Testing entries()');
+is_deeply(
+	rh( 2 => 4, 4 => 5, 6 => 7 )->entries,
+	ra( ra( 2, 4 ), ra( 4, 5 ), ra( 6, 7 ) ),
+	'Testing entries()'
+);
 
-my $a = ra(1, 2, 3);
-my $b = ra(4, 5, 6);
-my $c = ra(7, 8);
-is_deeply($a->zip($b), ra(ra(1, 4), ra(2, 5), ra(3, 6)), 'Testing zip()');
-is_deeply($a->zip($c), ra(ra(1, 7), ra(2, 8), ra(3, undef)), 'Testing zip()');
+my $a = ra( 1, 2, 3 );
+my $b = ra( 4, 5, 6 );
+my $c = ra( 7, 8 );
+is_deeply(
+	$a->zip($b),
+	ra( ra( 1, 4 ), ra( 2, 5 ), ra( 3, 6 ) ),
+	'Testing zip()'
+);
 
-is_deeply(ra(1, 3, 4)->union(ra(2, 4, 6)), ra(1, 3, 4, 2, 6), 'Testing union()');
+is_deeply(
+	$a->zip($c),
+	ra( ra( 1, 7 ), ra( 2, 8 ), ra( 3, undef ) ),
+	'Testing zip()'
+);
+
+is_deeply(
+	ra( 1, 3, 4 )->union( ra( 2, 4, 6 ) ),
+	ra( 1, 3, 4,                 2, 6 ),
+	'Testing union()'
+);
